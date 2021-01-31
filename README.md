@@ -4,6 +4,11 @@ Demo project of ailia SDK with Android Studio (Java)
 
 ![demo](demo.jpg)
 
+## Test environment
+
+- macOS 10.14.6
+- Android Studio 3.5.3
+
 ## Setup
 
 Please put ailia libraries here.
