@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import java.nio.ByteBuffer;
 
 public class MainActivity extends AppCompatActivity {
+    //Load prototxt and onnx file to byte array
     byte[] inputStreamToByteArray(InputStream in) throws IOException {
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         try(BufferedOutputStream out = new BufferedOutputStream(bout)) {
@@ -39,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //Load test image as byte array
     byte[] loadRawImage(Bitmap bmp) throws IOException {
         int w = bmp.getWidth(), h  = bmp.getHeight();
         int[] pixels = new int[w * h];
@@ -55,13 +57,19 @@ public class MainActivity extends AppCompatActivity {
         return bout.toByteArray();
     }
 
+    //preprocesss of u2net
+    //  input : input image (byte array) (rgba)
+    //  output : cnn input (float) (channel first) (bgr)
     void preprocess(float [] dst,int dst_width,int dst_height,byte [] src,int src_width,int src_height)
     {
-        byte max_value=1;
+        //java byte range is -128 - 127
+        //so we need to use &0xff for cast
+
+        int max_value=1;
         for(int y=0;y<src_height;y++){
             for(int x=0;x<src_width;x++){
                 for(int rgb=0;rgb<3;rgb++){
-                    byte value=src[y*src_width*4+x*4+rgb];
+                    int value=(src[y*src_width*4+x*4+rgb] & 0xff);
                     if(max_value<value){
                         max_value=value;
                     }
@@ -90,18 +98,21 @@ public class MainActivity extends AppCompatActivity {
 
                 for(int i=0;i<3;i++){
                     //bilinear
-                    byte v1=src[sy1*src_width*4+sx1*4+i];
-                    byte v2=src[sy1*src_width*4+sx2*4+i];
-                    byte v3=src[sy2*src_width*4+sx1*4+i];
-                    byte v4=src[sy2*src_width*4+sx2*4+i];
-                    byte v=(byte)((v1*(1-a)+v2*a)*(1-b)+(v3*(1-a)+v4*a)*b);
-
-                    dst[y*dst_width+x+i*dst_width*dst_height]=(1.0f*v/max_value - mean[i]) / std[i];
+                    int v1=(src[sy1*src_width*4+sx1*4+i] & 0xff);
+                    int v2=(src[sy1*src_width*4+sx2*4+i] & 0xff);
+                    int v3=(src[sy2*src_width*4+sx1*4+i] & 0xff);
+                    int v4=(src[sy2*src_width*4+sx2*4+i] & 0xff);
+                    int v=(int)((v1*(1-a)+v2*a)*(1-b)+(v3*(1-a)+v4*a)*b);
+                    int i_bgr=2-i;  //rgb to bgr
+                    dst[y*dst_width+x+i_bgr*dst_width*dst_height]=(1.0f*v/max_value - mean[i]) / std[i];
                 }
             }
         }
     }
 
+    //postprocess of u2net
+    //  input : cnn output (float) (channel first) (alpha)
+    //  output : output image (byte array) (rgba)
     void postprocess(byte [] dst,int dst_width,int dst_height,float [] src,int src_width,int src_height)
     {
         float min =  Float.MAX_VALUE;
@@ -141,7 +152,10 @@ public class MainActivity extends AppCompatActivity {
                 float alpha_value = ((v-min) / (max-min));
 
                 for(int i=0;i<3;i++){
-                    dst[y*dst_width*4+x*4+i] *= alpha_value;
+                    int i_rgb=2-i;  //bgr to rgb
+                    int adr = y*dst_width*4+x*4+i_rgb;
+                    int va = (int)((int)(dst[adr] & 0xff) * alpha_value);
+                    dst[adr] = (byte)va;
                 }
             }
         }
@@ -151,13 +165,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ailia_init(savedInstanceState);
+        ailia_u2net(savedInstanceState);
     }
 
-    protected void ailia_init(Bundle savedInstanceState) {
+    protected void ailia_u2net(Bundle savedInstanceState) {
         try {
+            //set temporary cache path for gpu
             Ailia.SetTemporaryCachePath(getCacheDir().getAbsolutePath());
 
+            //load test image
             final int imageId = R.raw.input;
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inScaled = false;
@@ -165,23 +181,21 @@ public class MainActivity extends AppCompatActivity {
             byte[] img = loadRawImage(bmp);
             int width = bmp.getWidth();
             int height = bmp.getHeight();
-
-            for(int i=0;i<8;i++){
-                Log.i("AILIA_Main","pixel "+i+" "+img[i]);
-            }
-
             Log.i("AILIA_Main","input image : "+width+" , "+height);
 
+            //display test image
             Bitmap bitmap = Bitmap.createBitmap(width , height, Bitmap.Config.ARGB_8888);
             bitmap.copyPixelsFromBuffer(ByteBuffer.wrap(img));
 
             ImageView image = (ImageView) findViewById(R.id.u2net_image_view);
             image.setImageBitmap(bitmap);
 
+            //create ailia instance
             int envId = 0;
             AiliaModel ailia = new AiliaModel(envId, Ailia.MULTITHREAD_AUTO,
                     loadRawFile(R.raw.u2netp_opset11_proto), loadRawFile(R.raw.u2netp_opset11_weight));
 
+            //prepare input and output buffer
             AiliaShape input_shape = ailia.getInputShape();
             Log.i("AILIA_Main", "input shape : " + input_shape.x+" "+input_shape.y+" "+input_shape.z+" "+input_shape.w+" "+input_shape.dim);
 
@@ -190,37 +204,33 @@ public class MainActivity extends AppCompatActivity {
 
             preprocess(input_buf, input_shape.x, input_shape.y, img, width, height);
 
-            for(int i=0;i<8;i++){
-                Log.i("AILIA_Main","input "+i+" "+input_buf[i]);
-            }
-
             AiliaShape output_shape = ailia.getOutputShape();
             Log.i("AILIA_Main", "output shape : " + output_shape.x+" "+output_shape.y+" "+output_shape.z+" "+output_shape.w+" "+output_shape.dim);
 
             int preds_size = output_shape.x*output_shape.y*output_shape.z*output_shape.w;
             float [] output_buf = new float[preds_size];
 
+            //compute
             int float_to_byte = 4;
-
             ailia.Predict(output_buf,preds_size*float_to_byte,input_buf,input_size*float_to_byte);
 
-            for(int i=0;i<8;i++){
-                Log.i("AILIA_Main","output "+i+" "+output_buf[i]);
-            }
-
+            //postprocessing
             postprocess(img, width, height, output_buf, output_shape.x, output_shape.y);
 
             Log.i("AILIA_Main","finish prediction");
 
+            //display output
             bitmap.copyPixelsFromBuffer(ByteBuffer.wrap(img));
             image.setImageBitmap(bitmap);
+
+            //close is called from AutoCloseable
         }
         catch (Exception e) {
             Log.i("AILIA_Error", e.getClass().getName() + ": " + e.getMessage());
         }
     }
 
-
+    //Important : load ailia library
     static {
         System.loadLibrary("ailia");
     }
