@@ -32,4 +32,4 @@ app/src/main/res/raw/u2netp_opset11_weight.onnx
 
 ## Main code
 
-[MainActivity.java](/blob/main/app/src/main/java/jp/axinc/ailia_u2net/MainActivity.java)
+[MainActivity.java](/app/src/main/java/jp/axinc/ailia_u2net/MainActivity.java)
