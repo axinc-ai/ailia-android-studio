@@ -1,8 +1,14 @@
 package axip.ailia;
 
 public enum AiliaNetworkImageChannel {
-    FIRST(0), // DCYX
-    LAST( 1); // DYXC
+	/**
+	 * DCYX order
+	 */
+    FIRST(0),
+	/**
+	 * DYXC order
+	 */
+    LAST( 1);
 
     private int value;
     private AiliaNetworkImageChannel(int value) {

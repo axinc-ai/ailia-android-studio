@@ -6,7 +6,13 @@ public class AiliaPoseEstimatorObjectFace
 
 	public static final int KEYPOINT_COUNT = 68;
 
+	/**
+	 * Detected human face landmarks. The array index corresponding to a human face landmark number.
+	 */
 	public AiliaPoseEstimatorKeypoint[] points;
+	/**
+	 * The confidence of this object
+	 */
     public float totalScore;
 
 	AiliaPoseEstimatorObjectFace(AiliaPoseEstimatorKeypoint[] points, float totalScore)

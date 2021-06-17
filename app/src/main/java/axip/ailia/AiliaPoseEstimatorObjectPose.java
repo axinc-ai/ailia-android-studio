@@ -25,10 +25,25 @@ public class AiliaPoseEstimatorObjectPose
 	public static final int KEYPOINT_BODY_CENTER = 18;
 	public static final int KEYPOINT_COUNT = 19;
 
+	/**
+	 * Detected body joint positions. The array index corresponding to a body joint number.
+	 */
 	public AiliaPoseEstimatorKeypoint[] points;
+	/**
+	 * The confidence of this object
+	 */
     public float totalScore;
+	/**
+	 * The number of body joint positions properly detected in {@value points}
+	 */
 	public int numValidPoints;
+	/**
+	 * A unique ID for this object in the time direction. An integer value of 1 or more.
+	 */
 	public int id;
+	/**
+	 * Euler angles for this object: yaw, pitch, and roll (in radians). Currently, only yaw is supported. If the angles are not detected, they are set to {@link Float#MAX_VALUE}.
+	 */
 	public float[] angle;
 
 	AiliaPoseEstimatorObjectPose(AiliaPoseEstimatorKeypoint[] points, float totalScore, int numValidPoints, int id, float[] angle)
