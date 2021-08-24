@@ -1,3 +1,6 @@
+/* Copyright 2018-2021 AXELL CORPORATION */
+/* Updated July 28, 2021*/
+
 package axip.ailia;
 
 public class AiliaDetectorObject {
@@ -11,7 +14,7 @@ public class AiliaDetectorObject {
 	 */
     public float prob;
 	/**
-	 * Position at the top left (1 for the image width)
+	 * Position at the top left (1 for the image width/height)
 	 */
     public float x, y;
 	/**

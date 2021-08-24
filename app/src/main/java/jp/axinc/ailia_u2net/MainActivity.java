@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
 
             //create ailia instance
             int envId = 0;
-            boolean lowMemoryMode = true;
+            boolean lowMemoryMode = false;
             AiliaModel ailia;
             if(lowMemoryMode) {
                 EnumSet<AiliaMemoryMode> memory_mode = AiliaModel.getMemoryMode(true, true, true, false);

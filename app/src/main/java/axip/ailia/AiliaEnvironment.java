@@ -1,11 +1,15 @@
+/* Copyright 2018-2021 AXELL CORPORATION */
+/* Updated July 28, 2021*/
+
 package axip.ailia;
 
 public class AiliaEnvironment {
     public static final int version = 2;
 
-    public static final int TYPE_CPU   = 0;
-    public static final int TYPE_BLAS  = 1;
-    public static final int TYPE_GPU   = 2;
+    public static final int TYPE_CPU    = 0;
+    public static final int TYPE_BLAS   = 1;
+    public static final int TYPE_GPU    = 2;
+    public static final int TYPE_REMOTE = 3;
 
     public static final int BACKEND_NONE = 0;
     public static final int BACKEND_AMP  = 1;

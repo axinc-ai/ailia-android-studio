@@ -1,3 +1,6 @@
+/* Copyright 2018-2021 AXELL CORPORATION */
+/* Updated July 28, 2021*/
+
 package axip.ailia;
 
 public enum AiliaNetworkImageFormat {
@@ -10,11 +13,11 @@ public enum AiliaNetworkImageFormat {
 	*/
     RGB(1),
 	/**
-	 * GrayScale (1ch)
+	 * Gray Scale (1ch)
 	*/
     GRAY(2),
 	/**
-	 * EqualizedGrayScale (1ch)
+	 * Equalized Gray Scale (1ch)
 	*/
 	GRAY_EQUALIZE(3);
 

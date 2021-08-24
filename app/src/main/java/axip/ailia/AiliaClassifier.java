@@ -1,3 +1,6 @@
+/* Copyright 2018-2021 AXELL CORPORATION */
+/* Updated July 28, 2021*/
+
 package axip.ailia;
 
 /**
@@ -7,8 +10,6 @@ public class AiliaClassifier {
 	/**
 	 * Creates a classifier instance.
 	 *
-	 * <p>Creates a network instance.
-	 * If the inference backend is set to automatic, CPU mode is used, while if BLAS is available, it uses BLAS.</p>
 	 * @param netHandle A network instance handle
 	 * @param format The network image format ({@link AiliaNetworkImageFormat})
 	 * @param channel The network image channel ({@link AiliaNetworkImageChannel})
