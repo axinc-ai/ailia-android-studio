@@ -416,7 +416,6 @@ public class AiliaModel implements AutoCloseable {
 	/**
 	 * Performs the inferences
 	 * @throws AiliaException
-	 * @see {@link Ailia#Predict(long, float[], int, float[], int)}
 	 */
 	public void update() throws AiliaException {
 		Ailia.Update(netHandle);
