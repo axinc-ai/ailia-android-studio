@@ -3,18 +3,12 @@
 
 package axip.ailia;
 
-public enum AiliaNetworkImageChannel {
-	/**
-	 * DCYX order
-	 */
-    FIRST(0),
-	/**
-	 * DYXC order
-	 */
-    LAST( 1);
+public enum AiliaDetectorFlags {
+
+    NORMAL(0);
 
     private int value;
-    private AiliaNetworkImageChannel(int value) {
+    private AiliaDetectorFlags(int value) {
         this.value = value;
     }
 

@@ -17,6 +17,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.widget.ImageView;
 import java.nio.ByteBuffer;
+import java.util.EnumSet;
 
 public class MainActivity extends AppCompatActivity {
     //Load prototxt and onnx file to byte array
@@ -192,8 +193,16 @@ public class MainActivity extends AppCompatActivity {
 
             //create ailia instance
             int envId = 0;
-            AiliaModel ailia = new AiliaModel(envId, Ailia.MULTITHREAD_AUTO,
-                    loadRawFile(R.raw.u2netp_opset11_proto), loadRawFile(R.raw.u2netp_opset11_weight));
+            boolean lowMemoryMode = false;
+            AiliaModel ailia;
+            if(lowMemoryMode) {
+                EnumSet<AiliaMemoryMode> memory_mode = AiliaModel.getMemoryMode(true, true, true, false);
+                ailia = new AiliaModel(envId, Ailia.MULTITHREAD_AUTO, memory_mode,
+                        loadRawFile(R.raw.u2netp_opset11_proto), loadRawFile(R.raw.u2netp_opset11_weight));
+            }else {
+                ailia = new AiliaModel(envId, Ailia.MULTITHREAD_AUTO,
+                        loadRawFile(R.raw.u2netp_opset11_proto), loadRawFile(R.raw.u2netp_opset11_weight));
+            }
 
             //prepare input and output buffer
             AiliaShape input_shape = ailia.getInputShape();

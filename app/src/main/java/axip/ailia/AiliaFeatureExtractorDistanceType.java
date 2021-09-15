@@ -3,18 +3,12 @@
 
 package axip.ailia;
 
-public enum AiliaNetworkImageChannel {
-	/**
-	 * DCYX order
-	 */
-    FIRST(0),
-	/**
-	 * DYXC order
-	 */
-    LAST( 1);
+public enum AiliaFeatureExtractorDistanceType {
+
+    L2NORM(0);
 
     private int value;
-    private AiliaNetworkImageChannel(int value) {
+    private AiliaFeatureExtractorDistanceType(int value) {
         this.value = value;
     }
 
