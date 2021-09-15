@@ -220,8 +220,21 @@ public class MainActivity extends AppCompatActivity {
             float [] output_buf = new float[preds_size];
 
             //compute
+            boolean updateApiMode = true;
             int float_to_byte = 4;
-            ailia.Predict(output_buf,preds_size*float_to_byte,input_buf,input_size*float_to_byte);
+            if(!updateApiMode) {
+                // single input and output api
+                Log.i("AILIA_Main", "predict API mode");
+                ailia.predict(output_buf, preds_size * float_to_byte, input_buf, input_size * float_to_byte);
+            }else{
+                Log.i("AILIA_Main", "update API mode");
+                // multiple input and output api
+                ailia.setInputBlobData(input_buf,input_size*float_to_byte,0);  //input.0
+                //ailia.setInputBlobData(input_buf,input_size*float_to_byte,1); //input.1 (if the model has multiple input)
+                ailia.update();
+                int output_blob_idx = ailia.getBlobIndexByOutputIndex(0);   //output.0
+                ailia.getBlobData(output_buf,preds_size*float_to_byte,output_blob_idx);
+            }
 
             //postprocessing
             postprocess(img, width, height, output_buf, output_shape.x, output_shape.y);

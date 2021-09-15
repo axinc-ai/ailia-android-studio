@@ -412,4 +412,50 @@ public class AiliaModel implements AutoCloseable {
 	public long getHandle() {
 		return netHandle;
 	}
+
+	/**
+	 * Performs the inferences
+	 * @throws AiliaException
+	 * @see {@link Ailia#Predict(long, float[], int, float[], int)}
+	 */
+	public void update() throws AiliaException {
+		Ailia.Update(netHandle);
+	}
+
+	/**
+	 * Set the input blob data.
+	 *
+	 * @param shape Shape information for the input data
+	 * @param src The input is stored as float data in the order of the inference data X, Y, Z, and W. The input has the same size as the network file inputSize.
+	 * @param srcSize The size of the src (in byte)
+	 * @param idx The input idx of input blob
+	 * @throws AiliaException
+	 */
+	public void setInputBlobData(float[] src, int srcSize, int idx) throws AiliaException {
+		Ailia.SetInputBlobData(netHandle, src, srcSize, idx);
+	}
+
+	/**
+	 * Get the output blob data.
+	 *
+	 * @param dest The result is stored in the inference result destination buffer as float data in the order of X, Y, Z, and W. The buffer has the same size as the network file outputSize.
+	 * @param destSize The size of the dest (in byte)
+	 * @param idx The input idx of blob
+	 * @throws AiliaException
+	 */
+	public void getBlobData(float[] dest, int destSize, int idx) throws AiliaException {
+		Ailia.GetBlobData(netHandle, dest, destSize, idx);
+	}
+
+	/**
+	 * Get the error detail
+	 *
+	 * @param dest The result is stored in the inference result destination buffer as float data in the order of X, Y, Z, and W. The buffer has the same size as the network file outputSize.
+	 * @param destSize The size of the dest (in byte)
+	 * @param idx The input idx of blob
+	 * @throws AiliaException
+	 */
+	public String getErrorDetail() throws AiliaException {
+		return Ailia.GetErrorDetail(netHandle);
+	}
 }
