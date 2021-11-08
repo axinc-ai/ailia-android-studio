@@ -171,6 +171,10 @@ public class MainActivity extends AppCompatActivity {
 
     protected void ailia_u2net(Bundle savedInstanceState) {
         try {
+            //mode
+            boolean lowMemoryMode = false;
+            boolean updateApiMode = true;
+
             //set temporary cache path for gpu
             Ailia.SetTemporaryCachePath(getCacheDir().getAbsolutePath());
 
@@ -193,35 +197,54 @@ public class MainActivity extends AppCompatActivity {
 
             //create ailia instance
             int envId = 0;
-            boolean lowMemoryMode = false;
             AiliaModel ailia;
             if(lowMemoryMode) {
+                // low memory mode
                 EnumSet<AiliaMemoryMode> memory_mode = AiliaModel.getMemoryMode(true, true, true, false);
                 ailia = new AiliaModel(envId, Ailia.MULTITHREAD_AUTO, memory_mode,
                         loadRawFile(R.raw.u2netp_opset11_proto), loadRawFile(R.raw.u2netp_opset11_weight));
             }else {
+                // normal memory mode
                 ailia = new AiliaModel(envId, Ailia.MULTITHREAD_AUTO,
                         loadRawFile(R.raw.u2netp_opset11_proto), loadRawFile(R.raw.u2netp_opset11_weight));
             }
 
             //prepare input and output buffer
-            AiliaShape input_shape = ailia.getInputShape();
+            AiliaShape input_shape;
+            AiliaShape output_shape;
+            if(!updateApiMode) {
+                // single input and output api
+                input_shape = ailia.getInputShape();
+                output_shape = ailia.getOutputShape();
+            }else{
+                // multiple input and output api
+                input_shape = ailia.getBlobShape(ailia.getBlobIndexByInputIndex(0));
+                output_shape = ailia.getBlobShape(ailia.getBlobIndexByOutputIndex(0));
+            }
             Log.i("AILIA_Main", "input shape : " + input_shape.x+" "+input_shape.y+" "+input_shape.z+" "+input_shape.w+" "+input_shape.dim);
+            Log.i("AILIA_Main", "output shape : " + output_shape.x+" "+output_shape.y+" "+output_shape.z+" "+output_shape.w+" "+output_shape.dim);
 
             int input_size = input_shape.x*input_shape.y*input_shape.z*input_shape.w;
             float [] input_buf = new float[input_size];
 
             preprocess(input_buf, input_shape.x, input_shape.y, img, width, height);
 
-            AiliaShape output_shape = ailia.getOutputShape();
-            Log.i("AILIA_Main", "output shape : " + output_shape.x+" "+output_shape.y+" "+output_shape.z+" "+output_shape.w+" "+output_shape.dim);
-
             int preds_size = output_shape.x*output_shape.y*output_shape.z*output_shape.w;
             float [] output_buf = new float[preds_size];
 
             //compute
             int float_to_byte = 4;
-            ailia.Predict(output_buf,preds_size*float_to_byte,input_buf,input_size*float_to_byte);
+            if(!updateApiMode) {
+                // single input and output api
+                Log.i("AILIA_Main", "predict API mode");
+                ailia.predict(output_buf, preds_size * float_to_byte, input_buf, input_size * float_to_byte);
+            }else{
+                // multiple input and output api
+                Log.i("AILIA_Main", "update API mode");
+                ailia.setInputBlobData(input_buf,input_size*float_to_byte,ailia.getBlobIndexByInputIndex(0)); // if the model has multiple input, please repeat this line
+                ailia.update();
+                ailia.getBlobData(output_buf,preds_size*float_to_byte,ailia.getBlobIndexByOutputIndex(0));
+            }
 
             //postprocessing
             postprocess(img, width, height, output_buf, output_shape.x, output_shape.y);
